@@ -13,13 +13,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Railway CLI
+      - name: Install Railway
         run: curl -fsSL https://railway.app/install.sh | sh
 
-      - name: Login to Railway
+      - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway login
-
-      - name: Deploy to Railway
-        run: railway up --service=skillopa
+        run: |
+          railway link --environment production
+          railway up --service=skillopa

@@ -3,28 +3,27 @@ name: Deploy to Railway
 on:
   push:
     branches:
-      - master
+      - master # Branch utama
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout kode dari repository
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: "18"
+      # Step 2: Build Docker Image
+      - name: Build Docker Image
+        run: |
+          docker build -t my-backend-image:latest -f Dockerfile .
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install Railway
-        run: npm i -g @railway/cli
-
-      - name: Deploy
-        run: railway up
+      # Step 3: Deploy ke Railway
+      - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          curl -sSL https://railway.app/install.sh | sh
+          railway login --token=$RAILWAY_TOKEN
+          railway up --service=skillopa

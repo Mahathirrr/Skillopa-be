@@ -20,4 +20,4 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --service=skillopa -t $RAILWAY_TOKEN
+          railway up --service=skillopa --token=$RAILWAY_TOKEN

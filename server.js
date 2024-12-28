@@ -11,9 +11,13 @@ const app = express();
 dotenv.config();
 
 mongoose
-  .connect(process.env.DATABASE)
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("DB Connected"))
-  .catch((e) => console.error(e));
+  .catch((e) => {
+    console.error("MongoDB connection error:");
+    console.error(e);
+    process.exit(1); // Exit process with failure
+  });
 
 // Apply Middlewares
 app.use(logger("dev"));

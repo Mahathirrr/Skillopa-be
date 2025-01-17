@@ -1,14 +1,35 @@
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { User } from "../models/user";
+import axios from "axios";
 import { comparePassword, hashPassword } from "../utils";
 import { interests } from "../data/interests";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+const verifyCaptcha = async (token) => {
+  try {
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+    );
+    return response.data.success;
+  } catch (error) {
+    console.error("reCAPTCHA verification error:", error);
+    return false;
+  }
+};
+
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, captchaToken } = req.body;
+
+    // Verify CAPTCHA
+    const isCaptchaValid = await verifyCaptcha(captchaToken);
+    if (!isCaptchaValid) {
+      return res
+        .status(400)
+        .send({ errorMessage: "CAPTCHA verification failed" });
+    }
 
     if (!name)
       return res.status(400).send({ errorMessage: "Name is required." });
@@ -67,7 +88,15 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, captchaToken } = req.body;
+
+    // Verify CAPTCHA
+    const isCaptchaValid = await verifyCaptcha(captchaToken);
+    if (!isCaptchaValid) {
+      return res
+        .status(400)
+        .send({ errorMessage: "CAPTCHA verification failed" });
+    }
 
     if (!email) {
       return res.status(400).send("Please enter a valid email address.");
@@ -161,4 +190,3 @@ const logout = (req, res) => {
 };
 
 export { register, login, googleLogin, logout };
-
